@@ -19,7 +19,7 @@ DEFINES += UNIT_TEST
 
 CONFIG -= link_prl
 CONFIG += link_pkgconfig
-PKGCONFIG += mlite5 systemsettings
+PKGCONFIG += mlite6 systemsettings-qt6
 
 QMAKE_CXXFLAGS += \
     -Werror \

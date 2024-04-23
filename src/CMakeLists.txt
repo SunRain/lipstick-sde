@@ -1,5 +1,12 @@
 set(PACKAGE lipstick-qt6)
 
+# find_package(Qt6 ${QT_MIN_VERSION} REQUIRED
+#     quick-private
+#     gui-private
+#     core-private
+#     compositor-private
+#     qml-private)
+
 set(PUBLICHEADERS
     utilities/qobjectlistmodel.h
     utilities/closeeventeater.h

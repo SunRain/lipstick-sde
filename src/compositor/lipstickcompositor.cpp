@@ -76,6 +76,7 @@ LipstickCompositor::LipstickCompositor()
 
     m_xdgShell = new QWaylandXdgShell(this);
     connect(m_xdgShell, &QWaylandXdgShell::toplevelCreated, this, &LipstickCompositor::onToplevelCreated);
+    //TODO connect more QWaylandXdgShell signal?
 
     m_wm = new QWaylandQtWindowManager(this);
     connect(m_wm, &QWaylandQtWindowManager::openUrl, this, &LipstickCompositor::openUrl);
