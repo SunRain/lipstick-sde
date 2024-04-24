@@ -1,29 +1,20 @@
-/***************************************************************************
-**
-** Copyright (c) 2015 Jolla Ltd.
-**
-** This file is part of lipstick.
-**
-** This library is free software; you can redistribute it and/or
-** modify it under the terms of the GNU Lesser General Public
-** License version 2.1 as published by the Free Software Foundation
-** and appearing in the file LICENSE.LGPL included in the packaging
-** of this file.
-**
-****************************************************************************/
+#include <QCoreApplication>
+#include <QtTest>
 
+// add necessary includes here
 #include "qobjectlistmodel.h"
 
-#include <QtTest/QtTest>
-#include <QObject>
-
-class Ut_QObjectListModel : public QObject
+class ut_qobjectlistmodel : public QObject
 {
     Q_OBJECT
 
+public:
+    ut_qobjectlistmodel();
+    ~ut_qobjectlistmodel();
+
 private slots:
-    void init();
-    void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
     void testPopulation();
     void testInsertion();
     void testRemoval();
@@ -31,15 +22,17 @@ private slots:
     void testMove();
     void testUpdate();
     void testSynchronization();
+
 };
 
-void Ut_QObjectListModel::init()
-{
-}
+ut_qobjectlistmodel::ut_qobjectlistmodel() {}
 
-void Ut_QObjectListModel::cleanup()
-{
-}
+ut_qobjectlistmodel::~ut_qobjectlistmodel() {}
+
+void ut_qobjectlistmodel::initTestCase() {}
+
+void ut_qobjectlistmodel::cleanupTestCase() {}
+
 
 QObject *makeObject(const QString &name)
 {
@@ -53,7 +46,7 @@ QString objectName(const QObject *object)
     return object->property("name").value<QString>();
 }
 
-void Ut_QObjectListModel::testPopulation()
+void ut_qobjectlistmodel::testPopulation()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -75,7 +68,7 @@ void Ut_QObjectListModel::testPopulation()
     delete objects;
 }
 
-void Ut_QObjectListModel::testInsertion()
+void ut_qobjectlistmodel::testInsertion()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -129,7 +122,7 @@ void Ut_QObjectListModel::testInsertion()
     delete objects;
 }
 
-void Ut_QObjectListModel::testRemoval()
+void ut_qobjectlistmodel::testRemoval()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -185,7 +178,7 @@ void Ut_QObjectListModel::testRemoval()
 
     model.removeItem(1);
     model.removeItem(0);
-    
+
     QCOMPARE(model.itemCount(), 0);
 
     QCOMPARE(addedSpy.count(), 0);
@@ -206,7 +199,7 @@ void Ut_QObjectListModel::testRemoval()
     delete objects;
 }
 
-void Ut_QObjectListModel::testBatchRemoval()
+void ut_qobjectlistmodel::testBatchRemoval()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -304,7 +297,7 @@ void Ut_QObjectListModel::testBatchRemoval()
     delete objects;
 }
 
-void Ut_QObjectListModel::testMove()
+void ut_qobjectlistmodel::testMove()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -349,7 +342,7 @@ void Ut_QObjectListModel::testMove()
     delete objects;
 }
 
-void Ut_QObjectListModel::testUpdate()
+void ut_qobjectlistmodel::testUpdate()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -394,7 +387,7 @@ void Ut_QObjectListModel::testUpdate()
     delete objects;
 }
 
-void Ut_QObjectListModel::testSynchronization()
+void ut_qobjectlistmodel::testSynchronization()
 {
     QList<QObject *> *objects = new QList<QObject *>;
     objects->append(makeObject("a"));
@@ -495,7 +488,6 @@ void Ut_QObjectListModel::testSynchronization()
     delete objects;
 }
 
-QTEST_MAIN(Ut_QObjectListModel)
+QTEST_MAIN(ut_qobjectlistmodel)
 
-#include "ut_qobjectlistmodel.moc"
-
+#include "tst_ut_qobjectlistmodel.moc"
