@@ -285,7 +285,11 @@ private:
     bool m_ambientModeEnabled;
 
     QList<QueuedSetUpdatesEnabledCall> m_queuedSetUpdatesEnabledCalls;
+
+//TODO MCE implements
+#ifndef NO_MCE
     QMceNameOwner *m_mceNameOwner;
+#endif
 
     QString m_logindSession;
     uint m_sessionActivationTries;

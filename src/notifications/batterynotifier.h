@@ -19,6 +19,9 @@
 
 #include <QObject>
 #include <QTimer>
+#include "lipstickglobal.h"
+
+#ifndef NO_MCE
 #include <qmcechargertype.h>
 #include <qmcechargerstate.h>
 #include <qmcechargingstate.h>
@@ -28,6 +31,8 @@
 #include <qmcedisplay.h>
 #include <qmcetklock.h>
 #include <qmcecallstate.h>
+#endif
+
 #include <qusbmoded.h>
 
 class NotificationManager;
@@ -90,19 +95,22 @@ private:
     };
 
     struct State {
-        QMceChargerType::Type m_chargerType = QMceChargerType::None;
         bool m_chargerState = false;
-        QMceChargingState::State m_chargingState = QMceChargingState::Unknown;
-        QMceBatteryStatus::Status m_batteryStatus = QMceBatteryStatus::Ok;
+        bool m_powerSaveMode = false;
+        bool m_tkLock = false;
+        bool m_suppressCharging = false;
         int m_batteryLevel = -1;
         int m_minimumBatteryLevel = -1;
-        bool m_powerSaveMode = false;
+//TOOD MCE implements
+#ifndef NO_MCE
+        QMceChargerType::Type m_chargerType = QMceChargerType::None;
+        QMceChargingState::State m_chargingState = QMceChargingState::Unknown;
+        QMceBatteryStatus::Status m_batteryStatus = QMceBatteryStatus::Ok;
         QMceDisplay::State m_displayState = QMceDisplay::DisplayOn;
-        bool m_tkLock = false;
         QMceCallState::State m_callState = QMceCallState::None;
         QMceCallState::Type m_callType = QMceCallState::Normal;
+#endif
         QString m_usbMode;
-        bool m_suppressCharging = false;
     };
 
     typedef QSet<NotificationType> NotificationTypeSet;
@@ -141,6 +149,9 @@ private:
     State m_previousState;
     int m_lowBatteryRepeatLevel;
     NotificationManager *m_notificationManager;
+
+//TOOD MCE implements
+#ifndef NO_MCE
     QMceChargerType *m_mceChargerType;
     QMceChargerState *m_mceChargerState;
     QMceChargingState *m_mceChargingState;
@@ -150,6 +161,7 @@ private:
     QMceDisplay *m_mceDisplay;
     QMceTkLock *m_mceTkLock;
     QMceCallState *m_mceCallState;
+#endif
     QUsbModed *m_usbModed;
     BackgroundActivity *m_lowBatteryRepeatActivity;
 };

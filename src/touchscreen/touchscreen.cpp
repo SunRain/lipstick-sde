@@ -22,8 +22,13 @@
 #include <QDBusPendingCallWatcher>
 #include <QDebug>
 
+#include "lipstickglobal.h"
+#include "logging.h"
+
+#ifndef NO_MCE
 #include <mce/dbus-names.h>
 #include <mce/mode-names.h>
+#endif
 
 bool userInteracting(const QEvent *event) {
     switch(event->type()) {
@@ -118,6 +123,8 @@ TouchScreen::TouchScreen(QObject *parent)
         }
     });
 
+//TODO MCE implements
+#ifndef NO_MCE
     QDBusConnection systemBus = QDBusConnection::systemBus();
 
     systemBus.connect(MCE_SERVICE,
@@ -131,7 +138,7 @@ TouchScreen::TouchScreen(QObject *parent)
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(query, this);
     connect(watcher, &QDBusPendingCallWatcher::finished,
             this, &TouchScreen::inputPolicyReply);
-
+#endif
     //qApp->installEventFilter(this);
 }
 
@@ -149,13 +156,23 @@ void TouchScreen::inputPolicyChanged(const QString &status)
 {
     Q_D(TouchScreen);
 
+//TODO MCE implements
+#ifdef NO_MCE
+    lcTuchScrenDBG<<"TODO MCE implements. Set inputEnabled true atm";
+    bool inputEnabled = true;
+#else
     bool inputEnabled = (status != MCE_INPUT_POLICY_DISABLED);
+#endif
 
     d->handleInputPolicyChange(inputEnabled);
 }
 
 void TouchScreen::inputPolicyReply(QDBusPendingCallWatcher *watcher)
 {
+//TODO MCE implements
+#ifdef NO_MCE
+    lcTuchScrenDBG<<"TODO MCE implements. Do NOTHING here";
+#else
     QDBusPendingReply<QString> reply = *watcher;
     if (reply.isError()) {
         qWarning() << MCE_TOUCH_INPUT_POLICY_GET"() failed!" << reply.error().name() << reply.error().message();
@@ -165,6 +182,7 @@ void TouchScreen::inputPolicyReply(QDBusPendingCallWatcher *watcher)
         inputPolicyChanged(reply.value());
     }
     watcher->deleteLater();
+#endif
 }
 
 bool TouchScreen::touchBlocked() const

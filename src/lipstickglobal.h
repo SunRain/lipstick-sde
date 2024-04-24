@@ -25,4 +25,8 @@
 #define LIPSTICK_EXPORT Q_DECL_IMPORT
 #endif
 
+#if defined(LIPSTICK_NO_MCE)
+#define NO_MCE
+#endif
+
 #endif // LIPSTICKGLOBAL_H

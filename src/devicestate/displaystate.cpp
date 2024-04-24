@@ -63,6 +63,11 @@ void DisplayStateMonitor::connectNotify(const QMetaMethod &signal) {
     QMutexLocker locker(&d->connectMutex);
 
     if (signal == QMetaMethod::fromSignal(&DisplayStateMonitor::displayStateChanged)) {
+//TODO MCE implements
+#ifdef NO_MCE
+        lcDsplySateDBG<<"TODO: MCE implements. call slotDisplayStateChanged immediately";
+        d->displayStateChanged(DisplayStateMonitor::DisplayState::On);
+#else
         if (0 == d->connectCount[SIGNAL_DISPLAY_STATE]) {
             QDBusConnection::systemBus().connect(MCE_SERVICE,
                                                  MCE_SIGNAL_PATH,
@@ -77,6 +82,7 @@ void DisplayStateMonitor::connectNotify(const QMetaMethod &signal) {
                             d,
                             SLOT(slotDisplayStateChanged(QString)));
         }
+#endif
         d->connectCount[SIGNAL_DISPLAY_STATE]++;
     }
 }
@@ -91,17 +97,29 @@ void DisplayStateMonitor::disconnectNotify(const QMetaMethod &signal) {
         d->connectCount[SIGNAL_DISPLAY_STATE]--;
 
         if (0 == d->connectCount[SIGNAL_DISPLAY_STATE]) {
+//TODO MCE implements
+#ifdef NO_MCE
+            lcDsplySateDBG<<"TODO: MCE implements. call slotDisplayStateChanged immediately";
+            d->displayStateChanged(DisplayStateMonitor::DisplayState::On);
+#else
             QDBusConnection::systemBus().disconnect(MCE_SERVICE,
                                                     MCE_SIGNAL_PATH,
                                                     MCE_SIGNAL_IF,
                                                     MCE_DISPLAY_SIG,
                                                     d,
                                                     SLOT(slotDisplayStateChanged(QString)));
+#endif
         }
     }
 }
 
-DisplayStateMonitor::DisplayState DisplayStateMonitor::get() const {
+DisplayStateMonitor::DisplayState DisplayStateMonitor::get() const
+{
+//TODO MCE implements
+#ifdef NO_MCE
+    lcDsplySateDBG<<"TODO: MCE implements. return DisplayState::On";
+    return DisplayStateMonitor::DisplayState::On;
+#else
     DisplayStateMonitor::DisplayState state = Unknown;
     QDBusReply<QString> displayStateReply = QDBusConnection::systemBus().call(
                                                 QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH, MCE_REQUEST_IF,
@@ -120,9 +138,17 @@ DisplayStateMonitor::DisplayState DisplayStateMonitor::get() const {
         state = Off;
     }
     return state;
+#endif
 }
 
-bool DisplayStateMonitor::set(DisplayStateMonitor::DisplayState state) {
+bool DisplayStateMonitor::set(DisplayStateMonitor::DisplayState state)
+{
+//TODO MCE implements
+#ifdef NO_MCE
+    lcDsplySateDBG<<"TODO: MCE implements. Nothing works here atm";
+    return true;
+#else
+
     QString method;
 
     switch (state) {
@@ -142,6 +168,7 @@ bool DisplayStateMonitor::set(DisplayStateMonitor::DisplayState state) {
     QDBusMessage displayStateSetCall = QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH, MCE_REQUEST_IF, method);
     (void)QDBusConnection::systemBus().call(displayStateSetCall, QDBus::NoBlock);
     return true;
+#endif
 }
 
 } //DeviceState namespace

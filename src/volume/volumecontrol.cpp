@@ -28,8 +28,13 @@
 #include <QDBusConnection>
 #include <QDBusPendingReply>
 #include <QDBusPendingCallWatcher>
+
+#ifndef NO_MCE
 #include <mce/dbus-names.h>
 #include <mce/mode-names.h>
+#endif
+
+#include "logging.h"
 
 static bool s_hwKeysCreated = false;
 
@@ -69,6 +74,9 @@ VolumeControl::VolumeControl(bool hwKeysCapability, QObject *parent) :
         qApp->installEventFilter(this);
         QTimer::singleShot(0, this, SLOT(createWindow()));
 
+//TODO MCE implements
+#ifndef NO_MCE
+
         QDBusConnection systemBus = QDBusConnection::systemBus();
 
         systemBus.connect(MCE_SERVICE,
@@ -82,7 +90,7 @@ VolumeControl::VolumeControl(bool hwKeysCapability, QObject *parent) :
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(inputPolicy, this);
         connect(watcher, &QDBusPendingCallWatcher::finished,
                 this, &VolumeControl::inputPolicyReply);
-
+#endif
         evaluateKeyState();
 
         s_hwKeysCreated = true;
@@ -110,6 +118,11 @@ VolumeControl::~VolumeControl()
 
 void VolumeControl::inputPolicyChanged(const QString &status)
 {
+//TODO MCE implements
+#ifdef NO_MCE
+    lcVolCtrlDBG<<"TODO MCE implements. Call hwKeysEnabled atm";
+    hwKeysEnabled();
+#else
     bool inputEnabled = (status != MCE_INPUT_POLICY_DISABLED);
 
     if (inputEnabled) {
@@ -117,10 +130,15 @@ void VolumeControl::inputPolicyChanged(const QString &status)
     } else {
         hwKeysDisabled();
     }
+#endif
 }
 
 void VolumeControl::inputPolicyReply(QDBusPendingCallWatcher *watcher)
 {
+//TODO MCE implements
+#ifdef NO_MCE
+    lcVolCtrlDBG<<"TODO MCE implements. Do NOTHING here";
+#else
     QDBusPendingReply<QString> reply = *watcher;
     if (reply.isError()) {
         qWarning() << MCE_VOLKEY_INPUT_POLICY_GET"() failed!" << reply.error().name() << reply.error().message();
@@ -130,6 +148,7 @@ void VolumeControl::inputPolicyReply(QDBusPendingCallWatcher *watcher)
         inputPolicyChanged(reply.value());
     }
     watcher->deleteLater();
+#endif
 }
 
 int VolumeControl::volume() const

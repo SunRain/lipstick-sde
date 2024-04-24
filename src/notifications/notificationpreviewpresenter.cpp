@@ -13,6 +13,7 @@
 **
 ****************************************************************************/
 
+#include "lipstickglobal.h"
 #include "homewindow.h"
 #include "lipsticksettings.h"
 #include "utilities/closeeventeater.h"
@@ -26,8 +27,12 @@
 #include "lipstickqmlpath.h"
 
 #include "screenlock/screenlock.h"
+#include "logging.h"
 
+#ifndef NO_MCE
 #include <mce/dbus-names.h>
+#endif
+
 #include <nemo-devicelock/devicelock.h>
 
 #include <QDBusMessage>
@@ -253,11 +258,16 @@ void NotificationPreviewPresenter::setCurrentNotification(LipstickNotification *
                     && !m_notificationFeedbackPlayer->doNotDisturbMode();
 
             if ((notificationIsCritical || displayOnRequested)) {
+//TOOD MCE implements
+#ifdef NO_MCE
+                lcNotifyDBG<<"TOOD: MCE implements. Ask mce to turn the screen on if requested.";
+#else
                 QString mceIdToAdd = QString("lipstick_notification_") + QString::number(notification->id());
                 QDBusMessage msg = QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH, MCE_REQUEST_IF,
                                                                   MCE_NOTIFICATION_BEGIN);
                 msg.setArguments(QVariantList() << mceIdToAdd << MCE_DURATION << MCE_EXTEND_DURATION);
                 QDBusConnection::systemBus().asyncCall(msg);
+#endif
             }
         }
     }

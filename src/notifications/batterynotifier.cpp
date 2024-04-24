@@ -23,6 +23,8 @@
 #include <time.h>
 #include <keepalive/backgroundactivity.h>
 
+#include "logging.h"
+
 // How much slack to include in keepalive wakeup ranges [s]
 static const int HEARTBEAT_INTERVAL = 12;
 
@@ -41,6 +43,7 @@ BatteryNotifier::BatteryNotifier(QObject *parent)
     : QObject(parent)
     , m_lowBatteryRepeatLevel(0)
     , m_notificationManager(NotificationManager::instance())
+#ifndef NO_MCE
     , m_mceChargerType(new QMceChargerType(this))
     , m_mceChargerState(new QMceChargerState(this))
     , m_mceChargingState(new QMceChargingState(this))
@@ -50,11 +53,15 @@ BatteryNotifier::BatteryNotifier(QObject *parent)
     , m_mceDisplay(new QMceDisplay(this))
     , m_mceTkLock(new QMceTkLock(this))
     , m_mceCallState(new QMceCallState(this))
+#endif
     , m_usbModed(new QUsbModed(this))
     , m_lowBatteryRepeatActivity(new BackgroundActivity(this))
 {
     connect(m_notificationManager, &NotificationManager::NotificationClosed,
             this, &BatteryNotifier::onNotificationClosed);
+
+//TOOD MCE implements
+#ifndef NO_MCE
     connect(m_mceChargerType, &QMceChargerType::validChanged,
             this, &BatteryNotifier::onChargerTypeChanged);
     connect(m_mceChargerType, &QMceChargerType::typeChanged,
@@ -93,6 +100,7 @@ BatteryNotifier::BatteryNotifier(QObject *parent)
             this, &BatteryNotifier::onCallStateChanged);
     connect(m_mceCallState, &QMceCallState::typeChanged,
             this, &BatteryNotifier::onCallStateChanged);
+#endif
     connect(m_usbModed, &QUsbModed::targetModeChanged,
             this, &BatteryNotifier::onTargetUsbModeChanged);
 
@@ -132,75 +140,129 @@ void BatteryNotifier::onNotificationClosed(uint id, uint reason)
 
 void BatteryNotifier::onChargerTypeChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceChargerType->valid()) {
         m_currentState.m_chargerType = m_mceChargerType->type();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onChargerStateChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceChargerState->valid()) {
         m_currentState.m_chargerState = m_mceChargerState->charging();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onChargingStateChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceChargingState->valid()) {
         m_currentState.m_chargingState = m_mceChargingState->state();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onBatteryStatusChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceBatteryStatus->valid()) {
         m_currentState.m_batteryStatus = m_mceBatteryStatus->status();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onBatteryLevelChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceBatteryLevel->valid()) {
         m_currentState.m_batteryLevel = m_mceBatteryLevel->percent();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onPowerSaveModeChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mcePowerSaveMode->valid()) {
         m_currentState.m_powerSaveMode = m_mcePowerSaveMode->active();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onDisplayChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceDisplay->valid()) {
         m_currentState.m_displayState = m_mceDisplay->state();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onTkLockChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceTkLock->valid()) {
         m_currentState.m_tkLock = m_mceTkLock->locked();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onCallStateChanged()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. call scheduleStateEvaluation();";
+    scheduleStateEvaluation();
+#else
     if (m_mceCallState->valid()) {
         m_currentState.m_callState = m_mceCallState->state();
         m_currentState.m_callType = m_mceCallState->type();
         scheduleStateEvaluation();
     }
+#endif
 }
 
 void BatteryNotifier::onTargetUsbModeChanged()
@@ -261,8 +323,11 @@ void BatteryNotifier::updateDerivedProperties()
      * Allow one to two percent drops to make false positives less likely.
      */
     if (m_currentState.m_chargerState == false
+       //TODO MCE implements
+#ifndef NO_MCE
         || m_currentState.m_batteryStatus == QMceBatteryStatus::Full
         || m_currentState.m_chargingState == QMceChargingState::Disabled
+#endif
         || m_currentState.m_batteryLevel > m_currentState.m_minimumBatteryLevel)
         m_currentState.m_minimumBatteryLevel = m_currentState.m_batteryLevel - 1;
 
@@ -313,6 +378,29 @@ bool BatteryNotifier::notificationTriggeringEdge(BatteryNotifier::NotificationTy
 bool BatteryNotifier::evaluateNotificationLevel(BatteryNotifier::NotificationType type,
                                                 const BatteryNotifier::State &state)
 {
+    //TODO MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TODO: MCE implements. NotificationType ["<<type<<"]";
+
+    bool level = false;
+    switch (type) {
+        case BatteryNotifier::NotificationCharging:
+        case BatteryNotifier::NotificationRechargeBattery:
+        case BatteryNotifier::NotificationLowBattery:
+        case BatteryNotifier::NotificationRemoveCharger:
+        case BatteryNotifier::NotificationEnteringPSM:
+        case BatteryNotifier::NotificationNotEnoughPower:
+            level = false;
+            break;
+        case BatteryNotifier::NotificationChargingComplete:
+        case BatteryNotifier::NotificationChargingNotStarted:
+        case BatteryNotifier::NotificationExitingPSM:
+            level = true;
+        default:
+            break;
+    }
+    return level;
+#else
     bool level = false;
     switch (type) {
     case BatteryNotifier::NotificationCharging:
@@ -361,6 +449,7 @@ bool BatteryNotifier::evaluateNotificationLevel(BatteryNotifier::NotificationTyp
         break;
     }
     return level;
+#endif
 }
 
 void BatteryNotifier::evaluateNotificationTriggering(NotificationType type,
@@ -533,6 +622,11 @@ void BatteryNotifier::stopLowBatteryNotifier()
 void BatteryNotifier::updateLowBatteryNotifier()
 {
     if (m_lowBatteryRepeatActivity->isWaiting()) {
+        //TODO MCE implements
+#ifdef NO_MCE
+        lcNotifyDBG<<"TODO: MCE implements. call m_lowBatteryRepeatActivity->run() immediately.";
+        m_lowBatteryRepeatActivity->run();
+#else
         /* We have ongoing battery low warning repeat cycle */
         bool active = (m_currentState.m_displayState != QMceDisplay::DisplayOff
                        && m_currentState.m_tkLock == false);
@@ -546,5 +640,6 @@ void BatteryNotifier::updateLowBatteryNotifier()
                 m_lowBatteryRepeatActivity->run();
             }
         }
+#endif
     }
 }

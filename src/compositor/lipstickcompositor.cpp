@@ -35,9 +35,12 @@
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QWaylandQuickShellSurfaceItem>
 
+#ifndef NO_MCE
 #include <mce/dbus-names.h>
 #include <mce/mode-names.h>
 #include <qmcenameowner.h>
+#endif
+
 #include <dbus/dbus-protocol.h>
 #include <sys/types.h>
 #include <systemd/sd-bus.h>
@@ -63,7 +66,9 @@ LipstickCompositor::LipstickCompositor()
     , m_onUpdatesDisabledUnfocusedWindowId(0)
     , m_fakeRepaintTriggered(false)
     , m_queuedSetUpdatesEnabledCalls()
+#ifndef NO_MCE
     , m_mceNameOwner(new QMceNameOwner(this))
+#endif
     , m_sessionActivationTries(0)
 {
     m_window = new QQuickWindow();
@@ -124,10 +129,13 @@ LipstickCompositor::LipstickCompositor()
 
     QTimer::singleShot(0, this, SLOT(initialize()));
 
+//TODO MCE implements
+#ifndef NO_MCE
     QObject::connect(m_mceNameOwner, &QMceNameOwner::validChanged,
                      this, &LipstickCompositor::processQueuedSetUpdatesEnabledCalls);
     QObject::connect(m_mceNameOwner, &QMceNameOwner::nameOwnerChanged,
                      this, &LipstickCompositor::processQueuedSetUpdatesEnabledCalls);
+#endif
 
     setUpdatesEnabledNow(false);
 }
@@ -460,11 +468,12 @@ void LipstickCompositor::initialize()
                  "Did not get primary name ownership");
     }
 
-
+//TODO MCE implements
+#ifndef NO_MCE
     QDBusMessage message = QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH, MCE_REQUEST_IF, MCE_DISPLAY_LPM_SET_SUPPORTED);
     message.setArguments(QVariantList() << ambientSupported());
     QDBusConnection::systemBus().asyncCall(message);
-
+#endif
     new FileServiceAdaptor(this);
     QDBusConnection sessionBus = QDBusConnection::sessionBus();
     sessionBus.registerObject(QLatin1String("/"), this);
@@ -909,6 +918,10 @@ void LipstickCompositor::setUpdatesEnabled(bool enabled, bool inAmbientMode)
 
 void LipstickCompositor::processQueuedSetUpdatesEnabledCalls()
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcCmpstrDBG<<"TODO MCE implements";
+#else
     if (m_mceNameOwner->valid()) {
         while (!m_queuedSetUpdatesEnabledCalls.isEmpty()) {
             QueuedSetUpdatesEnabledCall queued(m_queuedSetUpdatesEnabledCalls.takeFirst());
@@ -927,6 +940,7 @@ void LipstickCompositor::processQueuedSetUpdatesEnabledCalls()
             }
         }
     }
+#endif
 }
 
 void LipstickCompositor::surfaceCommitted()

@@ -33,8 +33,14 @@
 
 #include <QMutex>
 
+#include "lipstickglobal.h"
+
+#ifndef NO_MCE
 #include "mce/dbus-names.h"
 #include "mce/mode-names.h"
+#else
+#include "logging.h"
+#endif
 
 #define SIGNAL_DISPLAY_STATE 0
 
@@ -61,12 +67,18 @@ namespace DeviceState
     private Q_SLOTS:
 
         void slotDisplayStateChanged(const QString& state) {
+    //TODO MCE implements
+#ifdef NO_MCE
+    lcDsplySateDBG<<"TODO: MCE implements. Sending DisplayStateMonitor::On";
+    Q_EMIT displayStateChanged(DisplayStateMonitor::On);
+#else
             if (state == MCE_DISPLAY_OFF_STRING)
                 emit displayStateChanged(DisplayStateMonitor::Off);
             else if (state == MCE_DISPLAY_DIM_STRING)
                 emit displayStateChanged(DisplayStateMonitor::Dimmed);
             else if (state == MCE_DISPLAY_ON_STRING)
                 emit displayStateChanged(DisplayStateMonitor::On);
+#endif
         }
     };
 }

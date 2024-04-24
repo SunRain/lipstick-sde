@@ -21,7 +21,13 @@
 #include <QDebug>
 #include <QTouchEvent>
 
+#include"lipstickglobal.h"
+//TOOD MCE implements
+#ifndef NO_MCE
 #include <mce/mode-names.h>
+#endif
+
+#include "logging.h"
 
 #include "homeapplication.h"
 #include "screenlock.h"
@@ -49,6 +55,9 @@ ScreenLock::ScreenLock(TouchScreen *touch, QObject* parent) :
 
     connect(m_touchScreen, SIGNAL(touchBlockedChanged()), this, SIGNAL(touchBlockedChanged()));
 
+
+//TOOD MCE implements
+#ifndef NO_MCE
     auto systemBus = QDBusConnection::systemBus();
     systemBus.connect(QString(),
             "/com/nokia/mce/signal",
@@ -62,6 +71,7 @@ ScreenLock::ScreenLock(TouchScreen *touch, QObject* parent) :
             "display_blanking_policy_ind",
             this,
             SLOT(handleBlankingPolicyChange(QString)));
+#endif
 }
 
 ScreenLock::~ScreenLock()
@@ -144,10 +154,14 @@ void ScreenLock::setInteractionExpected(bool expected)
 
 void ScreenLock::lockScreen(bool immediate)
 {
+//TOOD MCE implements
+#ifdef NO_MCE
+    lcNotifyDBG<<"TOOD:MCE implements. Sending mce req_tklock_mode_change. Call showScreenLock immediately atm";
+#else
     QDBusMessage message = QDBusMessage::createMethodCall("com.nokia.mce", "/com/nokia/mce/request", "com.nokia.mce.request", "req_tklock_mode_change");
     message.setArguments(QVariantList() << (immediate ? MCE_TK_LOCKED : MCE_TK_LOCKED_DELAY));
     QDBusConnection::systemBus().asyncCall(message);
-
+#endif
     showScreenLock();
 }
 
