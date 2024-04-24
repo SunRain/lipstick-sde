@@ -25,8 +25,8 @@ class Ut_CategoryDefinitionStore : public QObject
     Q_OBJECT
 
 private slots:
-    void init();
-    void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
 
     void testCategoryDefinitionSettingsValues();
     void testCategoryDefinitionStoreMaxFileSizeHandling();

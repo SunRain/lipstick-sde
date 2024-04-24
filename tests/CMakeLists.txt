@@ -26,4 +26,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+pkg_check_modules(MLITE mlite6 REQUIRED IMPORTED_TARGET)
+pkg_check_modules(SYSTEMSETTINGS systemsettings-qt6 REQUIRED IMPORTED_TARGET)
+
 add_subdirectory(ut_qobjectlistmodel)
+add_subdirectory(ut_categorydefinitionstore)

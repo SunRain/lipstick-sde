@@ -15,8 +15,12 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+
+#include <QSettings>
+
 #include "ut_categorydefinitionstore.h"
 #include "categorydefinitionstore.h"
+
 
 // List of category definition files
 QStringList categoryDefinitionFilesList;
@@ -59,31 +63,31 @@ QStringList QSettings::allKeys() const
     return QStringList(categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).keys());
 }
 
-bool QSettings::contains(const QString &key) const
+bool QSettings::contains(QAnyStringView key) const
 {
-    return categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).contains(key);
+    return categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).contains(key.toString());
 }
 
-QVariant QSettings::value(const QString &key, const QVariant &defaultValue) const
+QVariant QSettings::value(QAnyStringView key, const QVariant &defaultValue) const
 {
-    if (categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).contains(key)) {
-        return categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).value(key);
+    if (categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).contains(key.toString())) {
+        return categoryDefinitionSettingsMap.value(QFileInfo(fileName()).baseName()).value(key.toString());
     } else {
         return defaultValue;
     }
 }
 
-void Ut_CategoryDefinitionStore::init()
+void Ut_CategoryDefinitionStore::initTestCase()
 {
     categoryDefinitionFilesList.clear();
     categoryDefinitionSettingsMap.clear();
     categoryDefinitionFileSize = 100;
 }
 
-void Ut_CategoryDefinitionStore::cleanup()
+void Ut_CategoryDefinitionStore::cleanupTestCase()
 {
-    delete store;
-    store = NULL;
+    // delete store;
+    // store = NULL;
 }
 
 void Ut_CategoryDefinitionStore::testCategoryDefinitionSettingsValues()
@@ -108,7 +112,7 @@ void Ut_CategoryDefinitionStore::testCategoryDefinitionSettingsValues()
     categoryDefinitionSettingsMap.insert("chatCategoryDefinition", chatSettingsMap);
 
     // Create a store that can hold up to 2 category definitions in memory at the same time
-    store = new CategoryDefinitionStore("/categorydefinitionpath", 2);
+    auto store = new CategoryDefinitionStore("/categorydefinitionpath", 2);
 
     // Verify settings object is null for invalid key
     QCOMPARE(store->categoryDefinitionExists("idontexist"), false);
@@ -154,6 +158,8 @@ void Ut_CategoryDefinitionStore::testCategoryDefinitionSettingsValues()
     QCOMPARE(store->value("smsCategoryDefinition", "iconId"), QString("sms-icon"));
     QCOMPARE(store->contains("smsCategoryDefinition", "feedbackId"), true);
     QCOMPARE(store->value("smsCategoryDefinition", "feedbackId"), QString("sound-file"));
+
+    store->deleteLater();
 }
 void Ut_CategoryDefinitionStore::testCategoryDefinitionStoreMaxFileSizeHandling()
 {
@@ -165,9 +171,10 @@ void Ut_CategoryDefinitionStore::testCategoryDefinitionStoreMaxFileSizeHandling(
     bigCategoryDefinitionSettingsMap.insert("feedbackId", "sound-file");
     categoryDefinitionSettingsMap.insert("bigCategoryDefinition", bigCategoryDefinitionSettingsMap);
 
-    store = new CategoryDefinitionStore("/categorydefinitionpath", 2);
+    auto store = new CategoryDefinitionStore("/categorydefinitionpath", 2);
     // Verify that settings object is NULL
     QCOMPARE(store->categoryDefinitionExists("bigCategoryDefinition"), false);
+    store->deleteLater();
 }
 
 void Ut_CategoryDefinitionStore::testCategoryDefinitionUninstalling()
@@ -175,7 +182,7 @@ void Ut_CategoryDefinitionStore::testCategoryDefinitionUninstalling()
     // Create existing category definition file
     categoryDefinitionFilesList.append("smsCategoryDefinition.conf");
 
-    store = new CategoryDefinitionStore("/categorydefinitionpath");
+    auto store = new CategoryDefinitionStore("/categorydefinitionpath");
     QSignalSpy uninstallSpy(store, SIGNAL(categoryDefinitionUninstalled(QString)));
     connect(this, SIGNAL(directoryChanged(QString)), store, SLOT(updateCategoryDefinitionFileList()));
 
@@ -196,6 +203,7 @@ void Ut_CategoryDefinitionStore::testCategoryDefinitionUninstalling()
     emit directoryChanged("/categorydefinitionpath");
     QCOMPARE(uninstallSpy.count(), 2);
     QCOMPARE(store->categoryDefinitionExists("smsCategoryDefinition"), false);
+    store->deleteLater();
 }
 
 QTEST_APPLESS_MAIN(Ut_CategoryDefinitionStore)
