@@ -33,6 +33,8 @@
 #include "devicestate_p.h"
 
 #include <dsme/thermalmanager_dbus_if.h>
+#include <dsme/dsme_dbus_if.h>
+
 #ifdef HAVE_SAILFISHUSERMANAGER
 #include <sailfishusermanagerinterface.h>
 #endif
