@@ -49,6 +49,7 @@ find_package(Qt6 ${QT_MIN_VERSION} REQUIRED
 find_package(KF6BluezQt REQUIRED)
 
 add_definitions(-DLIPSTICK_NO_MCE)
+add_definitions(-DVERBOSE_DBG)
 
 pkg_check_modules(DBUS dbus-1 REQUIRED IMPORTED_TARGET)
 pkg_check_modules(DSME_DBUS dsme_dbus_if REQUIRED IMPORTED_TARGET)
